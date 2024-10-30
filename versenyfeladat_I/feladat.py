@@ -1,6 +1,6 @@
-def refresh():
-    pass
-
+# Nev: Fabian Bernat
+# Neptun: URX5VP
+# h: h259147
 
 def elvalasztas(word):
     ### strings
@@ -9,53 +9,39 @@ def elvalasztas(word):
     consonants = "bcdfghjklmnpqrstvwxyz"
     current_syllable = ""
 
+    ### dicts
+    digraphs = {"cs", "sz", "ty", "gy", "ny", "dz", "dzs"}
+
     ### lists
     syllables = []
     # config: egy
     known_prefixes = [
-        "meg",
-        # "egy",
-        "fel",
-        "el",
-        "kép",
-        "köz",
-        "szem",
-        "kör",
-        "biz",
-        "gon",
-        "tár",
-        "gyors",
-        "gyógy",
-        "füg",
-        "ál",
-        "dön",
-        "nyelv",
-        "tér",
-        "asz",
-        "gyer",
-        "ün",
-        "or",
-        "mun",
-        "al",
-        "in",
-        "ér",
-        "rész",
-        "nyil",
-        "rend",
-        "karszt",
-        "kap",
-        "vég"
+        "meg",  "egy",
+        "fel", "el",
+        "kép", "köz",
+        "szem", "kör",
+        "biz", "gon",
+        "tár", "gyors",
+        "gyógy", "füg",
+        "ál", "dön",
+        "nyelv", "tér",
+        "asz", "gyer",
+        "ün", "or",
+        "mun", "al",
+        "in", "ér",
+        "rész", "nyil",
+        "rend", "karszt",
+        "kap", "vég"
     ]
+    # known_suffixes = ["ság", "ség", "os", "es", "ás", "és", "szág", "ügy", "mány"]
 
     ### ints
     i = 0
 
-    found_prefix = False
     for prefix in known_prefixes:
         if word.startswith(prefix):
             syllables.append(prefix)
             i = len(prefix)  # Move index after the prefix
-            found_prefix = True
             break
 
     # Iterate through the word to form syllables
@@ -65,16 +51,29 @@ def elvalasztas(word):
 
         # Check for syllable breaks: vowel followed by consonant or end of word
         if char in vowels:
-            if i < len(word) - 1 and word[i + 1] in vowels:  # Split if next char is also a vowel
-                syllables.append(current_syllable)
-                current_syllable = ""
-            elif i + 1 < len(word) and word[i + 1] not in vowels:
-                syllables.append(current_syllable)
-                current_syllable = ""
-            elif i == len(word) - 1:
-                syllables.append(current_syllable)
-                current_syllable = ""
+            # Handle consonant clusters between vowels
+            j = i + 1
+            consonant_cluster = ""
+            while j < len(word) and word[j] not in vowels:
+                consonant_cluster += word[j]
+                j += 1
 
+            # If a consonant cluster is found, apply splitting rule
+            if len(consonant_cluster) > 1:
+                split_point = len(consonant_cluster) - 1  # Default split: n-1 left, 1 right
+                for digraph in digraphs:
+                    if consonant_cluster.startswith(digraph):
+                        split_point = len(digraph)
+                        break
+
+                # Append the left side of the cluster to the current syllable
+                current_syllable += consonant_cluster[:split_point]
+                syllables.append(current_syllable)
+                current_syllable = consonant_cluster[split_point:]
+                i = j - 1  # Adjust index to just before next vowel
+            else:
+                syllables.append(current_syllable)
+                current_syllable = ""
         elif i == len(word) - 1 and current_syllable:
             # Handle trailing consonants by appending them to the last syllable
             if syllables:
@@ -84,10 +83,21 @@ def elvalasztas(word):
             current_syllable = ""
         i += 1
 
+    # Final check for dangling consonants at the end of the word
     if current_syllable:  # Append remaining part as a syllable
-        syllables.append(current_syllable)
+        if current_syllable[-1] in consonants:
+            # Append remaining consonants to the last syllable
+            if syllables and all(char in consonants for char in current_syllable):
+                syllables[-1] += current_syllable
+            else:
+                syllables.append(current_syllable)
+        else:
+            syllables.append(current_syllable)
+
+    # Check for suffix attachment if word ends with a known suffix
 
     return "-".join(syllables)
+
 
 
 dictionary = {
@@ -114,7 +124,7 @@ dictionary = {
     "tanító": "ta-ní-tó",
     "munkahely": "mun-ka-hely",
     "iskola": "is-ko-la",
-    "testvér": "tes-tvér",
+    "testvér": "test-vér",
     "hétköznap": "hét-köz-nap",
     "magyarország": "ma-gyar-or-szág",
     "nemzetközi": "nem-zet-kö-zi",
@@ -198,7 +208,8 @@ dictionary = {
     "irányítás": "i-rá-nyí-tás",
     "összekötés": "ösz-sze-kö-tés",
     "almalé": "al-ma-lé",
-    "karsztstrand": "karszt-strand"
+    "karsztstrand": "karszt-strand",
+    "fiaiéi": "fi-a-i-é-i"
 
 }
 
