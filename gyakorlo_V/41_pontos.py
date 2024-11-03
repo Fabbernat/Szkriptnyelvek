@@ -4,19 +4,27 @@
 
 
 def utolso_x_szo(string, number):
-    if not isinstance(string, str) or not isinstance(number, int) or number < 1 or any(char in string for char in "!.,?"):
-        return '-'
+    if not isinstance(string, str) or not isinstance(number, int) or number < 1 or any(
+            char in string for char in "!.,?"):
+        return "-"
     lista = string.split()
     if len(lista) < number:
-        return '-'
+        return "-"
     ujlista = lista[-number:]
     ujlista[0] = ujlista[0].capitalize()
-    retstr = ' '.join(ujlista) + '.'
+    retstr = " ".join(ujlista) + "."
     return retstr
 
 
+print(utolso_x_szo('én vagyok a legnagyobb rajongód', 3))
+print(utolso_x_szo('én vagyok az egyik fanod', 4))
+print(utolso_x_szo('Gercsó gónósz', 2))
+print(utolso_x_szo('vigyázni kell magamra, nincs b terv!', 4))
+print(utolso_x_szo('na most figyeld öcsikesz, azarát metriosz-zintosz', 2))
+
+
 def karakter_modusz(string):
-    if not isinstance(string, str) or len(string.split()) <= 0 or not string.split() or "uwu" in string:
+    if not isinstance(string, str) or len(string.split()) == 0 or not string.split() or "uwu" in string:
         return {"hibas": -1}
     found_chars_dict = {}
     for char in string:
@@ -34,6 +42,12 @@ def karakter_modusz(string):
     return {most_common_char: found_chars_dict[most_common_char]}
 
 
+print(karakter_modusz("aaabbc"))
+print(karakter_modusz(
+    "mondtam,                fuss el, szedd a              lábad,              jól elbújtál, nem talállak                 "))
+print(karakter_modusz("'megvárom veled a buszt uwu de csak ha szeretnéd owo'"))
+
+
 class Cipo:
 
     def __init__(self, marka, meret, _ar=10000):
@@ -41,12 +55,8 @@ class Cipo:
         self.marka = marka
         self.meret = meret
         self.matricak = []
-        if isinstance(_ar, (int, float)):
-            if _ar > 0:
-                self._ar = _ar
-            else:
-                self._ar = 10000
-        else:
+        self.teljes_matricanevek = []
+        if self._ar < 1:
             self._ar = 10000
 
     @property
@@ -61,47 +71,44 @@ class Cipo:
             else:
                 self._ar = 10000
         else:
-            self._ar = 10000
+            raise ValueError("Hibas ar!")
 
     def matrica_hozzaadas(self, hozzaadando_nev):
-        """
-        (5 pont)
-        """
         if not isinstance(hozzaadando_nev, str):
             raise ValueError("Hibas matrica!")
         feldolgozott_matrica = hozzaadando_nev[::2]
         if feldolgozott_matrica not in self.matricak:
+            self.teljes_matricanevek.append(hozzaadando_nev)
             self.matricak.append(feldolgozott_matrica)
 
     def matrica_torles(self, torlendo_nev):
-        """
-        (5 pont)
-        """
         if not isinstance(torlendo_nev, str):
             raise ValueError("Hibas matrica!")
 
         feldolgozott_matrica = torlendo_nev[::2]
         if feldolgozott_matrica in self.matricak:
-            # Visszafele haladunk a listaban, hogy biztonsagosan torolhessuk az elemeket
+            # Visszafelé haladunk a listában, hogy biztonságosan törölhessük az elemeket
             for i in range(len(self.matricak) - 1, -1, -1):
-                if str(self.matricak[i]) == feldolgozott_matrica:
+                if self.matricak[i] == feldolgozott_matrica:
+                    del self.teljes_matricanevek[i]
                     del self.matricak[i]
                     break
-        # else:
-        #     raise ValueError("A matrica nincs a cipon.") #no one asked for it
+        else:
+            raise ValueError("A matrica nincs a cipon.")
 
     def __str__(self):
-        if len(self.matricak) <= 0:
+        if len(self.teljes_matricanevek) <= 0:
             return f"Az uj {self.marka} markaju, EU {self.meret}meretu cipo ara jelenleg {self._ar} Ft es meg se lett meg sertve matricakkal."
         else:
-            kiirando = ", ".join(map(str, self.matricak))
-            return f"Az uj {self.marka} markaju, EU {self.meret} meretu cipo ara jelenleg {self.ar} Ft. {len(self.matricak)} db matrica van rajta.\nNev szerint: {kiirando}."
+            kiirando = ", ".join(map(str, self.teljes_matricanevek))
+            return f"Az uj {self.marka} markaju, EU {self.meret} meretu cipo ara jelenleg {self.ar} Ft. {len(self.teljes_matricanevek)} db matrica van rajta.\nNev szerint: {kiirando}."
 
     def __iadd__(self, other):
         if other is None or not isinstance(other, Cipo):
             raise ValueError("Hibas tipus!")
         for matrica in other.matricak:
             if matrica not in self.matricak:
+                self.teljes_matricanevek.append(matrica)
                 self.matricak.append(matrica)
         self.ar += int(other.ar * 0.7)
         return self
@@ -112,7 +119,7 @@ class Cipo:
         else:
             return self.marka == other.marka and self._ar == other._ar
 
-'''
+
 egy_cipo = Cipo("Nike", 35, 5000)
 egy_masik_cipo = Cipo("Adidas", 36, 5005)
 egy_cipo.ar = -1
@@ -122,4 +129,3 @@ egy_cipo += egy_masik_cipo
 print(egy_cipo)  # Az uj Nike markaju cipo, EU 35 meretu cipo ara jelenleg 13503 Ft. 2 db matrica van rajta.
 # Nev szerint: Valami, Kekw.
 print(egy_cipo == egy_masik_cipo)  # False
-'''
